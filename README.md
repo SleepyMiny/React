@@ -1,5 +1,224 @@
 <h1>202130123 이민영</h1>
 
+<h1>🗓 **2025-05-08 / 9번째 수업**</h1>
+
+# React로 사고하기
+
+React를 사용하게 되면 우리가 고려하고 있는 디자인이나 만들 앱들에 대한 생각을 바꿀 수 있습니다. React로 사용자 인터페이스를 빌드할 때, 먼저 이를 컴포넌트라는 조각으로 나눕니다. 그리고 각 컴포넌트의 다양한 시각적 상태들을 정의합니다. 마지막으로 컴포넌트들을 연결하여 데이터가 그 사이를 흘러가게 합니다. 이 자습서에서는 React로 검색할 수 있는 상품 테이블을 만드는 과정을 체계적으로 안내해 드리겠습니다.
+
+---
+
+## 모의 시안과 함께 시작하기
+
+이미 JSON API와 디자이너로부터 제공받은 모의 시안이 있다고 생각해 봅시다.  
+JSON API는 아래와 같은 형태의 데이터를 반환합니다.
+
+```js
+[
+  { category: "Fruits", price: "$1", stocked: true, name: "Apple" },
+  { category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit" },
+  { category: "Fruits", price: "$2", stocked: false, name: "Passionfruit" },
+  { category: "Vegetables", price: "$2", stocked: true, name: "Spinach" },
+  { category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin" },
+  { category: "Vegetables", price: "$1", stocked: true, name: "Peas" }
+]
+```
+
+---
+
+## Step 1: UI를 컴포넌트 계층으로 쪼개기
+
+React로 UI를 구현하기 위해서는 일반적으로 다음과 같은 다섯 가지 단계를 따릅니다.
+
+먼저 모의 시안에 있는 모든 컴포넌트와 하위 컴포넌트 주변에 박스를 그리고 그들에게 이름을 붙이세요.  
+디자이너와 함께 일한다면, 그들이 이미 디자인 툴을 통하여 이 컴포넌트들에 이름을 정해두었을 수도 있습니다.
+
+컴포넌트를 나누는 기준:
+- **Programming 관점:** 단일 책임 원칙에 따라 한 번에 한 가지 일만 하도록 분리
+- **CSS 관점:** 어떤 클래스 선택자를 만들지 생각
+- **Design 관점:** 디자인 계층에 따른 분리
+
+### 이 예시의 주요 컴포넌트들
+
+- **FilterableProductTable (회색)**: 전체를 포괄
+- **SearchBar (파란색)**: 사용자 입력
+- **ProductTable (라벤더색)**: 리스트와 필터링
+- **ProductCategoryRow (초록색)**: 카테고리 헤더
+- **ProductRow (노란색)**: 제품 행
+
+### 컴포넌트 계층 구조
+
+```
+FilterableProductTable
+├── SearchBar
+└── ProductTable
+    ├── ProductCategoryRow
+    └── ProductRow
+```
+
+---
+
+## Step 2: React로 정적인 버전 구현하기
+
+상호작용 없이 정적인 버전을 먼저 만들고, 이후에 상호작용 기능을 추가하는 것이 더 쉽습니다.
+
+정적인 버전에서는 **props**만 사용하며 **state는 사용하지 않습니다.**
+
+### 예시 코드
+
+```jsx
+function ProductCategoryRow({ category }) {
+  return (
+    <tr>
+      <th colSpan="2">{category}</th>
+    </tr>
+  );
+}
+
+function ProductRow({ product }) {
+  const name = product.stocked ? product.name :
+    <span style={{ color: 'red' }}>{product.name}</span>;
+
+  return (
+    <tr>
+      <td>{name}</td>
+      <td>{product.price}</td>
+    </tr>
+  );
+}
+
+function ProductTable({ products }) {
+  const rows = [];
+  let lastCategory = null;
+
+  products.forEach((product) => {
+    if (product.category !== lastCategory) {
+      rows.push(
+        <ProductCategoryRow
+          category={product.category}
+          key={product.category}
+        />
+      );
+    }
+    rows.push(
+      <ProductRow
+        product={product}
+        key={product.name}
+      />
+    );
+    lastCategory = product.category;
+  });
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Price</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+}
+```
+
+---
+
+## Step 3: 최소한의 데이터로 UI 상태 표현하기
+
+### 상태로 고려할 요소는?
+
+- **제품 목록:**  props로 전달됨
+- **검색어:**  state
+- **체크박스:**  state
+- **필터링된 제품 목록:**  계산 가능
+
+---
+
+## Step 4: 상태를 어디에 둘지 결정하기
+
+- **SearchBar**는 상태를 표시함
+- **ProductTable**은 상태에 따라 제품을 필터링함
+- 두 컴포넌트의 공통 부모는 **FilterableProductTable**
+
+따라서 state는 `FilterableProductTable` 컴포넌트에 위치합니다.
+
+### 코드 예시
+
+```jsx
+import { useState } from 'react';
+
+function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  return (
+    <div>
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly}
+      />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## 마지막 참고: 폼 제어하기
+
+현재 `SearchBar` 컴포넌트는 사용자 입력을 읽기 전용으로 받고 있으며, 변경 핸들러가 없기 때문에 경고가 발생합니다. 이를 해결하려면 `onChange` 핸들러를 추가해야 합니다.
+
+```jsx
+function SearchBar({
+  filterText,
+  inStockOnly,
+  onFilterTextChange,
+  onInStockOnlyChange
+}) {
+  return (
+    <form>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={filterText}
+        onChange={(e) => onFilterTextChange(e.target.value)}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)}
+        />
+        Only show products in stock
+      </label>
+    </form>
+  );
+}
+```
+
+---
+
+## 정리
+
+- UI를 컴포넌트로 나눈다.
+- 정적인 버전 먼저 만든다.
+- 최소 상태만 정의한다.
+- 상태의 위치를 공통 부모로 끌어올린다.
+- 상호작용을 위한 이벤트 핸들러를 추가한다.
+
+React 사고방식에 익숙해지면 복잡한 UI도 쉽게 만들 수 있습니다!
+
+
+
+
 <h1>🗓 **2025-04-18 / 8번째 수업(보강)**</h1>
 
 # ⏳ React 시간 여행 기능 완벽 가이드
