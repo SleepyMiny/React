@@ -1,5 +1,309 @@
 <h1>202130123 이민영</h1>
 
+<h1>🗓 **2025-05-15 / 10번째 수업**</h1>
+
+
+## Step 4: 상태를 어디에 둘지 결정하기
+
+- **SearchBar**는 상태를 표시함
+- **ProductTable**은 상태에 따라 제품을 필터링함
+- 두 컴포넌트의 공통 부모는 **FilterableProductTable**
+
+따라서 state는 `FilterableProductTable` 컴포넌트에 위치합니다.
+
+### 코드 예시
+
+```jsx
+import { useState } from 'react';
+
+function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  return (
+    <div>
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly}
+      />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## 폼 제어하기
+
+현재 `SearchBar` 컴포넌트는 사용자 입력을 읽기 전용으로 받고 있으며, 변경 핸들러가 없기 때문에 경고가 발생합니다. 이를 해결하려면 `onChange` 핸들러를 추가해야 합니다.
+
+```jsx
+function SearchBar({
+  filterText,
+  inStockOnly,
+  onFilterTextChange,
+  onInStockOnlyChange
+}) {
+  return (
+    <form>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={filterText}
+        onChange={(e) => onFilterTextChange(e.target.value)}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)}
+        />
+        Only show products in stock
+      </label>
+    </form>
+  );
+}
+```
+
+---
+
+## Step 5: 역 데이터 흐름 추가하기
+
+지금까지 우리는 계층 구조 아래로 흐르는 `props`와 `state`를 사용해 앱을 만들었습니다.  
+이제 사용자 입력에 따라 상태를 변경하려면 **반대 방향의 데이터 흐름**이 필요합니다.
+
+React는 데이터 흐름을 명시적으로 보여줍니다. 이는 전통적인 양방향 바인딩보다는 약간의 타이핑이 더 필요하지만, 데이터 흐름이 더 명확하게 드러나기 때문에 유지보수에 유리합니다.
+
+---
+
+### 문제: 왜 입력을 해도 UI가 바뀌지 않을까?
+
+앞에서 만든 정적 버전에서는 아래 코드처럼 `<input value={filterText} />`로 되어 있어서, `filterText` state 값이 변하지 않으면 input 값도 고정됩니다.
+
+따라서 사용자가 키보드로 타이핑을 해도 UI에 반영되지 않습니다.  
+이제 사용자의 입력을 받아 state를 바꾸고, 그것이 다시 UI에 반영되도록 구현해야 합니다.
+
+---
+
+### 해결 방법: 역방향 데이터 흐름 설정
+
+`SearchBar`가 부모인 `FilterableProductTable`의 state를 변경할 수 있도록 하기 위해서,  
+**state 변경 함수인 `setFilterText`와 `setInStockOnly`를 props로 내려보냅니다.**
+
+####  변경된 FilterableProductTable
+
+```jsx
+import { useState } from 'react';
+
+function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  return (
+    <div>
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly}
+      />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+###  변경된 SearchBar
+
+```jsx
+function SearchBar({
+  filterText,
+  inStockOnly,
+  onFilterTextChange,
+  onInStockOnlyChange
+}) {
+  return (
+    <form>
+      <input
+        type="text"
+        value={filterText}
+        placeholder="Search..."
+        onChange={(e) => onFilterTextChange(e.target.value)}
+      />
+      <label>
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)}
+        />
+        Only show products in stock
+      </label>
+    </form>
+  );
+}
+```
+
+---
+
+이제 사용자가 검색어를 입력하거나 체크박스를 클릭하면  
+**상위 컴포넌트인 `FilterableProductTable`의 state가 바뀌고**,  
+그 값이 다시 하위 컴포넌트로 내려가 UI가 업데이트되는 구조가 됩니다.
+
+이것이 바로 **React의 단방향 데이터 흐름** 원칙입니다.
+
+---
+
+##  애플리케이션 완성!
+
+```jsx
+import { useState } from 'react';
+
+function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  return (
+    <div>
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly} />
+      <ProductTable
+        products={products}
+        filterText={filterText}
+        inStockOnly={inStockOnly} />
+    </div>
+  );
+}
+
+function ProductCategoryRow({ category }) {
+  return (
+    <tr>
+      <th colSpan="2">
+        {category}
+      </th>
+    </tr>
+  );
+}
+
+function ProductRow({ product }) {
+  const name = product.stocked ? product.name :
+    <span style={{ color: 'red' }}>
+      {product.name}
+    </span>;
+
+  return (
+    <tr>
+      <td>{name}</td>
+      <td>{product.price}</td>
+    </tr>
+  );
+}
+
+function ProductTable({ products, filterText, inStockOnly }) {
+  const rows = [];
+  let lastCategory = null;
+
+  products.forEach((product) => {
+    if (
+      product.name.toLowerCase().indexOf(
+        filterText.toLowerCase()
+      ) === -1
+    ) {
+      return;
+    }
+    if (inStockOnly && !product.stocked) {
+      return;
+    }
+    if (product.category !== lastCategory) {
+      rows.push(
+        <ProductCategoryRow
+          category={product.category}
+          key={product.category} />
+      );
+    }
+    rows.push(
+      <ProductRow
+        product={product}
+        key={product.name} />
+    );
+    lastCategory = product.category;
+  });
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+}
+
+function SearchBar({
+  filterText,
+  inStockOnly,
+  onFilterTextChange,
+  onInStockOnlyChange
+}) {
+  return (
+    <form>
+      <input
+        type="text"
+        value={filterText} placeholder="Search..."
+        onChange={(e) => onFilterTextChange(e.target.value)} />
+      <label>
+         <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)} />
+        {' '}
+        Only show products in stock
+      </label>
+    </form>
+  );
+}
+
+const PRODUCTS = [
+  {category: "Fruits", price: "$1", stocked: true, name: "Apple"},
+  {category: "Fruits", price: "$1", stocked: true, name: "Dragonfruit"},
+  {category: "Fruits", price: "$2", stocked: false, name: "Passionfruit"},
+  {category: "Vegetables", price: "$2", stocked: true, name: "Spinach"},
+  {category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin"},
+  {category: "Vegetables", price: "$1", stocked: true, name: "Peas"}
+];
+
+export default function App() {
+  return <FilterableProductTable products={PRODUCTS} />;
+}
+```
+
+이제 우리의 제품 테이블 앱은 다음과 같은 기능을 갖추게 됩니다:
+
+- 텍스트 검색 기능
+- "재고 있는 제품만 보기" 기능
+- 실시간으로 UI 업데이트
+
+---
+
+
 
 
 <h1>🗓 **2025-05-08 / 9번째 수업**</h1>
@@ -137,84 +441,73 @@ function ProductTable({ products }) {
 
 ---
 
-## Step 4: 상태를 어디에 둘지 결정하기
+---
 
-- **SearchBar**는 상태를 표시함
-- **ProductTable**은 상태에 따라 제품을 필터링함
-- 두 컴포넌트의 공통 부모는 **FilterableProductTable**
+##  Props vs State
 
-따라서 state는 `FilterableProductTable` 컴포넌트에 위치합니다.
+React에는 **두 가지 주요 데이터 모델**이 있습니다: `props`와 `state`.  
+이 둘은 역할이 다르며, 각각의 사용 목적이 명확합니다.
 
-### 코드 예시
+---
+
+###  Props란?
+
+- **"부모 → 자식" 방향으로 데이터를 전달**하는 방식
+- 마치 **함수의 매개변수**처럼 사용
+- 자식 컴포넌트의 외관을 커스터마이징할 수 있음
+- **읽기 전용** (자식 컴포넌트는 props를 수정할 수 없음)
+
+#### 예시
 
 ```jsx
-import { useState } from 'react';
+function Button({ color }) {
+  return <button style={{ color }}>Click me</button>;
+}
 
-function FilterableProductTable({ products }) {
-  const [filterText, setFilterText] = useState('');
-  const [inStockOnly, setInStockOnly] = useState(false);
+function Form() {
+  return <Button color="blue" />;
+}
+```
+
+---
+
+###  State란?
+
+- 컴포넌트가 **내부적으로 기억하는 데이터(메모리)**
+- 시간이 지나거나 사용자의 입력에 따라 **변경 가능**
+- 컴포넌트의 **상호작용(interaction)**을 가능하게 함
+
+#### 예시
+
+```jsx
+function Button() {
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div>
-      <SearchBar
-        filterText={filterText}
-        inStockOnly={inStockOnly}
-        onFilterTextChange={setFilterText}
-        onInStockOnlyChange={setInStockOnly}
-      />
-      <ProductTable
-        products={products}
-        filterText={filterText}
-        inStockOnly={inStockOnly}
-      />
-    </div>
+    <button
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {isHovered ? 'Hello!' : 'Hover me'}
+    </button>
   );
 }
 ```
 
 ---
 
-## 마지막 참고: 폼 제어하기
+### 함께 동작하는 구조
 
-현재 `SearchBar` 컴포넌트는 사용자 입력을 읽기 전용으로 받고 있으며, 변경 핸들러가 없기 때문에 경고가 발생합니다. 이를 해결하려면 `onChange` 핸들러를 추가해야 합니다.
+- 일반적으로 **state는 부모 컴포넌트에 저장**됩니다.
+- 부모 컴포넌트는 해당 state를 **자식 컴포넌트에 props로 전달**합니다.
+- 자식 컴포넌트는 전달받은 값을 읽기만 하며, 이벤트 핸들러 등을 통해 부모의 state를 변경 요청할 수 있습니다.
 
-```jsx
-function SearchBar({
-  filterText,
-  inStockOnly,
-  onFilterTextChange,
-  onInStockOnlyChange
-}) {
-  return (
-    <form>
-      <input
-        type="text"
-        placeholder="Search..."
-        value={filterText}
-        onChange={(e) => onFilterTextChange(e.target.value)}
-      />
-      <label>
-        <input
-          type="checkbox"
-          checked={inStockOnly}
-          onChange={(e) => onInStockOnlyChange(e.target.checked)}
-        />
-        Only show products in stock
-      </label>
-    </form>
-  );
-}
-```
+이런 구조가 바로 React의 **단방향 데이터 흐름(one-way data flow)** 입니다.
 
 ---
 
-## 정리
 
-- UI를 컴포넌트로 나눈다.
-- 정적인 버전 먼저 만든다.
-- 최소 상태만 정의한다.
-- 상태의 위치를 공통 부모로 끌어올린다.
-- 상호작용을 위한 이벤트 핸들러를 추가한다.
+
 
 
 
