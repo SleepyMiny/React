@@ -1,6 +1,208 @@
 <h1>202130123 이민영</h1>
 
-<h1> **2025-05-15 / 10번째 수업**</h1>
+<h1> **2025-05-22 / 12번째 수업**</h1>
+
+# React 설치 및 프로젝트 구성 가이드
+
+---
+
+## 1. React 소개 및 적용 방식
+
+React는 필요한 만큼 점진적으로 적용할 수 있도록 설계된 UI 라이브러리입니다.  
+간단한 HTML에 상호작용을 추가하거나, 대규모 SPA 및 풀스택 앱을 구축할 때도 유연하게 사용할 수 있습니다.
+
+### 다음과 같은 경우에 적합합니다:
+
+- React를 간단히 체험하고 싶을 때
+- 기존 웹사이트에 동적 기능을 추가하고 싶을 때
+- 처음부터 React 앱을 개발하고자 할 때
+
+---
+
+## 2. 설치 없이 React 체험하기
+
+React를 설치하지 않고도 다양한 온라인 샌드박스를 통해 직접 체험할 수 있습니다.
+
+### 대표적인 샌드박스:
+
+- CodeSandbox
+- StackBlitz
+- CodePen
+
+### 예제 코드:
+
+```jsx
+function Greeting({ name }) {
+  return <h1>Hello, {name}!</h1>;
+}
+
+export default function App() {
+  return <Greeting name="World" />;
+}
+```
+
+---
+
+## 3. 로컬 환경에서 React 사용해보기
+
+로컬에서 React를 체험하려면 다음 중 하나의 방법을 선택할 수 있습니다:
+
+- HTML 파일에 React CDN 추가
+- Node.js 설치 후 React 프로젝트 초기화
+
+Node.js만 있다면 간단한 서버 환경도 구성할 수 있습니다.
+
+---
+
+## 4. 새로운 React 앱 만들기
+
+앱을 본격적으로 개발하려면 프레임워크나 빌드 도구를 활용하는 것이 효율적입니다.
+
+### 4-1. 프레임워크 기반 개발
+
+#### Next.js
+
+- CSR, SSR, SSG, RSC 모두 지원
+- App Router 기반 구조 제공
+- 폴더 자동 라우팅, 이미지 최적화 등 다양한 기능 내장
+- Vercel에서 공식 유지 및 배포 지원
+
+```bash
+npx create-next-app@latest
+```
+
+#### React Router + Vite
+
+- React 라우팅 라이브러리와 빠른 빌드 도구 조합
+- 라우팅 설정이 자유롭고 경량화에 유리
+
+```bash
+npx create-react-router@latest
+```
+
+#### Expo (React Native)
+
+- React Native 기반 범용 앱 프레임워크
+- 모바일 앱 + 웹 앱 동시 개발 가능
+
+```bash
+npx create-expo-app@latest
+```
+
+#### RedwoodJS
+
+- GraphQL, Prisma, 인증 시스템 내장
+- 프론트와 백을 단일 프로젝트로 구성
+
+#### TanStack Start (Beta)
+
+- RSC, SSR, 스트리밍 등 최신 기능 실험 가능
+- 고급 사용자 또는 연구 프로젝트에 적합
+
+---
+
+## 5. React 앱 직접 구성하기
+
+### 5-1. 빌드 도구 설치
+
+프레임워크 없이 직접 구성하려면, 빌드 도구를 사용해 개발 서버와 번들링을 설정해야 합니다.
+
+#### Vite
+
+```bash
+npm create vite@latest my-app -- --template react
+```
+
+- ESBuild 기반 초고속 번들러
+- JSX, TS, CSS 등 기본 지원
+- React 프로젝트에서 가장 많이 사용됨
+
+#### Parcel
+
+```bash
+npm install --save-dev parcel
+```
+
+- 설정 없는 간단한 빌드 도구
+- JSX, TS, 이미지, 스타일링 자동 처리
+
+#### Rsbuild
+
+```bash
+npx create-rsbuild --template react
+```
+
+- Rspack 기반 고성능 도구
+- SWC 트랜스파일링, 대규모 앱에 적합
+
+> React Native는 Metro 번들러를 사용합니다.
+
+---
+
+## 6. 공통 애플리케이션 기능 구성
+
+### 라우팅
+
+- URL 경로에 따라 컴포넌트 렌더링
+- 중첩 경로, 파라미터, 쿼리 문자열 지원
+
+추천 도구:
+
+- React Router
+- TanStack Router
+
+### 데이터 패칭
+
+- API 요청 후 상태 관리
+- 로딩/에러/성공 상태, 캐싱, 재요청 등 포함
+
+추천 라이브러리:
+
+- REST API: React Query, SWR, RTK Query
+- GraphQL: Apollo Client, Relay
+
+> 라우터 수준에서 사전 패칭하는 방식이 성능에 유리합니다.
+
+### 코드 스플리팅
+
+- React.lazy, dynamic import 등을 활용해 필요할 때만 코드 로딩
+- 초기 로딩 속도 향상에 기여
+
+---
+
+## 7. 렌더링 전략
+
+| 전략 | 설명 |
+|------|------|
+| SPA | 클라이언트에서 페이지를 동적으로 렌더링 |
+| SSR | 서버에서 페이지를 렌더링 후 HTML 전송 |
+| SSG | 빌드 시 정적인 HTML 파일을 생성 |
+| RSC | 서버 전용 React 컴포넌트로 최적화 |
+
+> Next.js의 App Router는 이 모든 전략을 경로별로 조합 가능
+
+---
+
+### SPA의 특징
+
+- 하나의 HTML을 로드 후, JS로 모든 페이지를 제어
+- 초기 로딩 속도가 느릴 수 있음
+- 대부분의 빌드 도구에서 기본 구조로 채택
+
+> SSR, SSG, RSC는 구현은 복잡하지만, SEO 및 초기 성능 개선에 유리
+
+---
+
+## 8. 정리
+
+- 빠르게 시작하려면: **Next.js** 또는 **Vite + React Router**
+- 직접 구성하고 싶다면: **Vite, Parcel, Rsbuild**
+- 규모 있는 프로젝트라면 프레임워크 사용이 확장성과 성능 면에서 유리
+
+---
+
+
+<h1> **2025-05-15 / 11번째 수업**</h1>
 
 ## Step 4: 상태를 어디에 둘지 결정하기
 
